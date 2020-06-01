@@ -1,16 +1,37 @@
 require "sinatra"
 require "addressable/uri"
 require "net/http"
+require "json"
+
+configure do
+  DB = Hash.new{ |h,k| h[k] = [] }
+end
 
 helpers do
   # Addressable::URI -> Bool
   def validate_uri_scheme(uri)
     ['http', 'https'].include?(uri.scheme)
   end
+
+  def insert_to_store(source, target)
+    # TODO: support poermanent storage if available
+    DB[target] << source
+  end
+
+  def select_from_store(target)
+    DB[target]
+  end
 end
 
 get '/' do
-  'aaa'
+  if params['url']
+    # URL is given. Return stored webmentions.
+    content_type :json
+    select_from_store(params['url']).to_json
+  else
+    content_type :json
+    DB.keys.to_json
+  end
 end
 
 post '/' do
@@ -64,6 +85,7 @@ post '/' do
 
   # Congrats! All `MUST` verification passed.
   # TODO: store webmention data to anywhere permanent storage for future use.
+  insert_to_store(source, target)
   warn "Webmention from #{source} to #{target} has been successfully processed."
   "Webmention from #{source} to #{target} has been successfully processed."
 end
