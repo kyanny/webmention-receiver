@@ -1,6 +1,6 @@
 # webmention-receiver
 
-A Webmention receiver implementation for practice.
+A [Webmention](https://www.w3.org/TR/webmention/) receiver implementation for practice.
 
 Only covers MUST specifications very roughly.
 
