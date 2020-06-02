@@ -13,6 +13,17 @@ helpers do
     ['http', 'https'].include?(uri.scheme)
   end
 
+  def halt_with_message(message, status_code = 400)
+    logger.info message
+    halt status_code, message
+  end
+
+  def success_with_message(message, status_code = 200)
+    logger.info message
+    status status_code
+    message
+  end
+
   def insert_to_store(source, target)
     # TODO: support poermanent storage if available
     DB[target] << source
@@ -38,9 +49,11 @@ post '/' do
   target = params['target']
   
   # [MUST] Check if `source` and `target` parameters are given
-  if !source || !target
-    warn "Error: `source` and `target` parameters are required."
-    halt 400, "Error: `source` and `target` parameters are required."
+  unless source
+    halt_with_message "Error: `source` parameter is required."
+  end
+  unless target
+    halt_with_message "Error: `target` parameter is required."
   end
 
   # 3.2.1 Request Verification
@@ -49,19 +62,16 @@ post '/' do
   # [MUST] Check if `source` and `target` is valid HTTP URL
   source_uri = Addressable::URI.parse(source)
   unless validate_uri_scheme(source_uri)
-    warn "Error: #{source_uri} is not a valid HTTP URL."
-    halt 400, "Error: #{source_uri} is not a valid HTTP URL."
+    halt_with_message "Error: `source` #{source_uri} is not a valid HTTP URL."
   end
   target_uri = Addressable::URI.parse(target)
   unless validate_uri_scheme(target_uri)
-    warn "Error: #{source_uri} is not a valid HTTP URL."
-    halt 400, "Error: #{source_uri} is not a valid HTTP URL."
+    halt_with_message "Error: `target` #{target_uri} is not a valid HTTP URL."
   end
 
   # [MUST] Check if `source` and `target` are different HTTP URL
   if source == target
-    warn "Error: `source` and `target` must be different."
-    halt 400, "Error: `source` and `target` must be different."
+    halt_with_message "Error: `source` and `target` must be different."
   end
 
   # 3.2.2 Webmention Verification
@@ -78,13 +88,11 @@ post '/' do
 
   # Check if `source` content includes `target` URL
   unless res.body.include?(target)
-    warn "Error: `source` content must include `target` URL."
-    halt 400, "Error: `source` content must include `target` URL."
+    halt_with_message "Error: `source` content must include `target` URL."
   end
 
   # Congrats! All `MUST` verification passed.
   # TODO: store webmention data to anywhere permanent storage for future use.
   insert_to_store(source, target)
-  warn "Webmention from #{source} to #{target} has been successfully processed."
-  "Webmention from #{source} to #{target} has been successfully processed."
+  success_with_message "Webmention from #{source} to #{target} has been successfully processed."
 end
