@@ -1,6 +1,6 @@
 # webmention-receiver
 
-A [Webmention](https://www.w3.org/TR/webmention/) receiver implementation for practice.
+A [Webmention](https://www.w3.org/TR/webmention/) receiver implementation for practice. Demo deployment is https://immense-dusk-57047.herokuapp.com/.
 
 Only covers MUST specifications very roughly.
 
