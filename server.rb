@@ -29,8 +29,12 @@ get '/' do
     content_type :json
     select_from_store(params['url']).to_json
   else
-    content_type :json
     DB.keys.to_json
+    template = <<TEMPLATE
+<%= DB.keys.to_json %>
+<a href="mailto:kyanny@gmail.com" rel="me">kyanny@gmail.com</a>   
+TEMPLATE
+    erb template
   end
 end
 
